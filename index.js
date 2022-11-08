@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 require("colors");
 const app = express();
@@ -45,6 +45,7 @@ try {
 } catch {
   console.log(err.name, err.stack);
 }
+
 try {
   app.get("/allservices", async (req, res) => {
     const query = {};
@@ -55,6 +56,17 @@ try {
 } catch {
   console.log(err.name, err.stack);
 }
+
+// get single service details
+
+try {
+  app.get("/allservices/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await doctorPortal.findOne(query);
+    res.send(result);
+  });
+} catch (error) {}
 
 app.get("/", (req, res) => {
   res.send("Hello im from backend");
