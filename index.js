@@ -90,7 +90,12 @@ app.post("/riviews", async (req, res) => {
 
 app.get("/riviews", async (req, res) => {
   try {
-    const query = {};
+    let query = {};
+    if (req.query.email) {
+      query = {
+        email: req.query.email,
+      };
+    }
     const cursor = ClientRiviews.find(query);
     const result = await cursor.toArray();
     res.send(result);
@@ -103,6 +108,30 @@ app.get("/riviews/:id", async (req, res) => {
   const cursor = ClientRiviews.find(query);
   const result = await cursor.toArray();
   res.send(result);
+});
+
+app.patch("/riviews/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const updatedDoc = {
+      $set: req.body,
+    };
+    const result = await ClientRiviews.updateOne(query, updatedDoc);
+    console.log(result);
+    res.send(result);
+  } catch (error) {}
+});
+
+app.delete("/riviews/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const riview = await ClientRiviews.deleteOne(query);
+    res.send(riview);
+  } catch (error) {
+    console.log(error.name.bgRed);
+  }
 });
 
 app.get("/", (req, res) => {
