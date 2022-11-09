@@ -34,6 +34,7 @@ async function run() {
 run().catch((err) => console.log(err.message.bgRed));
 
 const doctorPortal = client.db("doctorPortalDbUser").collection("services");
+const ClientRiviews = client.db("doctorPortalDbUser").collection("riviews");
 
 try {
   app.get("/services", async (req, res) => {
@@ -67,6 +68,19 @@ try {
     res.send(result);
   });
 } catch (error) {}
+
+app.post("/riviews", async (req, res) => {
+  try {
+    const riviews = req.body;
+    const result = await ClientRiviews.insertOne(riviews);
+    res.send(result);
+  } catch (error) {
+    res.send({
+      success: false,
+      message: "cannot feedback",
+    });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Hello im from backend");
