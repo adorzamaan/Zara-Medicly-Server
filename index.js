@@ -58,6 +58,12 @@ try {
   console.log(err.name, err.stack);
 }
 
+app.post("/allservices", async (req, res) => {
+  const query = req.body;
+  const service = doctorPortal.insertOne(query);
+  res.send(service);
+});
+
 // get single service details
 
 try {
@@ -80,6 +86,22 @@ app.post("/riviews", async (req, res) => {
       message: "cannot feedback",
     });
   }
+});
+
+app.get("/riviews", async (req, res) => {
+  try {
+    const query = {};
+    const cursor = ClientRiviews.find(query);
+    const result = await cursor.toArray();
+    res.send(result);
+  } catch (error) {}
+});
+
+app.get("/rivieews/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const singleRiview = await ClientRiviews.findOne(query);
+  res.send(singleRiview);
 });
 
 app.get("/", (req, res) => {
