@@ -97,11 +97,12 @@ app.get("/riviews", async (req, res) => {
   } catch (error) {}
 });
 
-app.get("/rivieews/:id", async (req, res) => {
+app.get("/riviews/:id", async (req, res) => {
   const id = req.params.id;
-  const query = { _id: ObjectId(id) };
-  const singleRiview = await ClientRiviews.findOne(query);
-  res.send(singleRiview);
+  const query = { sericeID: id };
+  const cursor = ClientRiviews.find(query);
+  const result = await cursor.toArray();
+  res.send(result);
 });
 
 app.get("/", (req, res) => {
