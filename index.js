@@ -1,7 +1,10 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
+const { verify } = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 require("colors");
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -9,18 +12,27 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "mongodb+srv://doctorPortalDbUser:orqY8jCH3NXCdWxO@cluster0.chgrg5k.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.chgrg5k.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-// client.connect((err) => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
+
+function VerifyjsonWebToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized Access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 
 async function run() {
   try {
@@ -36,6 +48,18 @@ run().catch((err) => console.log(err.message.bgRed));
 const doctorPortal = client.db("doctorPortalDbUser").collection("services");
 const ClientRiviews = client.db("doctorPortalDbUser").collection("riviews");
 
+app.post("/jwt", (req, res) => {
+  try {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.JWT_ACCESS_TOKEN, {
+      expiresIn: "365d",
+    });
+    res.send({ token });
+  } catch (error) {
+    console.log(error.name, error.message.bgGreen);
+  }
+});
+
 try {
   app.get("/services", async (req, res) => {
     const query = {};
@@ -50,7 +74,7 @@ try {
 try {
   app.get("/allservices", async (req, res) => {
     const query = {};
-    const cursor = doctorPortal.find(query);
+    const cursor = doctorPortal.find(query).sort({ _id: -1 });
     const services = await cursor.toArray();
     res.send(services);
   });
