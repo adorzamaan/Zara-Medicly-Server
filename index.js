@@ -1,8 +1,8 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
-const { verify } = require("jsonwebtoken");
-const jwt = require("jsonwebtoken");
+// const { verify } = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 require("colors");
 require("dotenv").config();
 const app = express();
@@ -19,46 +19,46 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-function VerifyjsonWebToken(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).send({ message: "Unauthorized Access" });
-  }
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_ACCESS_TOKEN, function (err, decoded) {
-    if (err) {
-      return res.status(401).send({ message: "Unauthorized access" });
-    }
-    req.decoded = decoded;
-    next();
-  });
-}
+// function VerifyjsonWebToken(req, res, next) {
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader) {
+//     return res.status(401).send({ message: "Unauthorized Access" });
+//   }
+//   const token = authHeader.split(" ")[1];
+//   jwt.verify(token, process.env.JWT_ACCESS_TOKEN, function (err, decoded) {
+//     if (err) {
+//       return res.status(401).send({ message: "Unauthorized access" });
+//     }
+//     req.decoded = decoded;
+//     next();
+//   });
+// }
 
 async function run() {
   try {
     client.connect();
     console.log("Database Connected");
   } catch (error) {
-    console.log(error.name.bgRed, error.message.bold);
+    console.log(error.name, error.message);
   }
 }
 
-run().catch((err) => console.log(err.message.bgRed));
+run().catch((err) => console.log(err.message));
 
 const doctorPortal = client.db("doctorPortalDbUser").collection("services");
 const ClientRiviews = client.db("doctorPortalDbUser").collection("riviews");
 
-app.post("/jwt", (req, res) => {
-  try {
-    const user = req.body;
-    const token = jwt.sign(user, process.env.JWT_ACCESS_TOKEN, {
-      expiresIn: "365d",
-    });
-    res.send({ token });
-  } catch (error) {
-    console.log(error.name, error.message.bgGreen);
-  }
-});
+// app.post("/jwt", (req, res) => {
+//   try {
+//     const user = req.body;
+//     const token = jwt.sign(user, process.env.JWT_ACCESS_TOKEN, {
+//       expiresIn: "365d",
+//     });
+//     res.send({ token });
+//   } catch (error) {
+//     console.log(error.name, error.message);
+//   }
+// });
 
 try {
   app.get("/services", async (req, res) => {
@@ -114,6 +114,11 @@ app.post("/riviews", async (req, res) => {
 
 app.get("/riviews", async (req, res) => {
   try {
+    // const decoded = req.decoded;
+    // // console.log(decoded);
+    // if (decoded.email !== req.query.email) {
+    //   res.status(403).send("unauthorized access");
+    // }
     let query = {};
     if (req.query.email) {
       query = {
@@ -143,8 +148,10 @@ app.patch("/riviews/:id", async (req, res) => {
     };
     const result = await ClientRiviews.updateOne(query, updatedDoc);
     console.log(result);
-    res.send(result);
-  } catch (error) {}
+    return res.send(result);
+  } catch (error) {
+    console.log(error.name, error.message);
+  }
 });
 
 app.delete("/riviews/:id", async (req, res) => {
@@ -154,7 +161,7 @@ app.delete("/riviews/:id", async (req, res) => {
     const riview = await ClientRiviews.deleteOne(query);
     res.send(riview);
   } catch (error) {
-    console.log(error.name.bgRed);
+    console.log(error.name);
   }
 });
 
@@ -162,5 +169,5 @@ app.get("/", (req, res) => {
   res.send("Hello im from backend");
 });
 app.listen(port, () => {
-  console.log(`Doctor portal server running ong ${port}`.bgGreen);
+  console.log(`Doctor portal server running ong ${port}`);
 });
